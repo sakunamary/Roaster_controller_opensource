@@ -37,7 +37,7 @@ void Task_modbus_control(void *pvParameters)
 { // function
     (void)pvParameters;
     TickType_t xLastWakeTime;
-    const TickType_t xIntervel = 200 / portTICK_PERIOD_MS;
+    const TickType_t xIntervel = 500 / portTICK_PERIOD_MS;
     xLastWakeTime = xTaskGetTickCount();
 
     for (;;)
