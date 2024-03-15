@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"name": "roaster_controller_opensource",
+			"path": ".."
+		}
+	],
+    "settings": {
+        "files.associations": {
+            "*.tcc": "cpp",
+            "cstddef": "cpp"
+        }
+    }
+}
