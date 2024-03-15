@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <config.h>
-#include "esp_task_wdt.h"
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -13,9 +12,6 @@
 #include <TASK_read_temp.h>
 
 
-extern bool loopTaskWDTEnabled;
-extern TaskHandle_t loopTaskHandle;
-
 
 String local_IP;
 
@@ -23,7 +19,7 @@ char ap_name[30];
 uint8_t macAddr[6];
 AsyncWebServer server(80);
 
-//HardwareSerial Serial(0);
+HardwareSerial Serial_debug(0);
 
 void Task_modbus_control(void *pvParameters);
 void Task_Thermo_get_data(void *pvParameters);
@@ -31,17 +27,17 @@ void Task_Thermo_get_data(void *pvParameters);
 
 void setup()
 {
-    loopTaskWDTEnabled = true;
+
 
     xGetDataMutex = xSemaphoreCreateMutex();
 
      pinMode(HEAT_OUT_PIN, OUTPUT);
      pinMode(FAN_OUT_PIN, OUTPUT);
 
-    Serial.begin(BAUDRATE);
+    Serial_debug.begin(BAUDRATE,SERIAL_8N1,-1,-1);
 
 #if defined(DEBUG_MODE)
-    Serial.printf("\nHOT AIR ROASTER STARTING...\n");
+    Serial_debug.printf("\nHOT AIR ROASTER STARTING...\n");
 #endif
 
     // 初始化网络服务
@@ -52,7 +48,7 @@ void setup()
     WiFi.softAP(ap_name, "12345678"); // defualt IP address :192.168.4.1 password min 8 digis
 
 #if defined(DEBUG_MODE)
-    Serial.printf("\nStart Task...\n");
+    Serial_debug.printf("Start Task...\n");
 #endif
 
     /*---------- Task Definition ---------------------*/
@@ -67,7 +63,7 @@ void setup()
         NULL // Running Core decided by FreeRTOS,let core0 run wifi and BT
     );
 #if defined(DEBUG_MODE)
-    Serial.printf("\nTASK1:Task_Thermo_get_data...\n");
+    Serial_debug.printf("TASK1:Task_Thermo_get_data...\n");
 #endif
 
     xTaskCreate(
@@ -80,7 +76,7 @@ void setup()
         NULL // Running Core decided by FreeRTOS,let core0 run wifi and BT
     );
 #if defined(DEBUG_MODE)
-    Serial.printf("\nTASK2:Task_modbus_control...\n");
+    Serial_debug.printf("TASK2:Task_modbus_control...\n");
 #endif
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -90,7 +86,7 @@ void setup()
     server.begin();
 
 #if defined(DEBUG_MODE)
-    Serial.println("HTTP server started");
+    Serial_debug.println("HTTP server started");
 #endif
 
     // Init pwm fan  output
@@ -100,7 +96,7 @@ void setup()
 #if defined(DEBUG_MODE)
     pwm_fan.printDebug();
 
-    Serial.println("PWM FAN started");
+    Serial_debug.println("PWM FAN started");
 
 #endif
 
@@ -111,13 +107,13 @@ void setup()
 #if defined(DEBUG_MODE)
     pwm_heat.printDebug();
 
-    Serial.println("PWM FAN started");
+    Serial_debug.println("PWM FAN started");
 
 #endif
 
 // Init Modbus-TCP
 #if defined(DEBUG_MODE)
-    Serial.printf("\nStart Modbus-TCP   service...\n");
+    Serial_debug.printf("Start Modbus-TCP   service...\n");
 #endif
     mb.server(502); // Start Modbus IP //default port :502
     mb.addHreg(BT_HREG);
