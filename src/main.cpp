@@ -1,43 +1,37 @@
 #include <Arduino.h>
 #include <config.h>
 #include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
-
-#include <ModbusIP_ESP8266.h>
-#include <pwmWrite.h>
-
-#include <TASK_modbus_control.h>
 #include <TASK_read_temp.h>
-
-
+#include <TASK_modbus_control.h>
 
 String local_IP;
 
 char ap_name[30];
 uint8_t macAddr[6];
-AsyncWebServer server(80);
 
-HardwareSerial Serial_debug(0);
+//HardwareSerial Serial_debug(0);
 
 void Task_modbus_control(void *pvParameters);
 void Task_Thermo_get_data(void *pvParameters);
 
-
 void setup()
 {
 
+    xThermoDataMutex = xSemaphoreCreateMutex();
 
-    xGetDataMutex = xSemaphoreCreateMutex();
+    pinMode(PWM_HEAT, OUTPUT);
+    pinMode(PWM_FAN, OUTPUT);
+    // PWM Pins
+    ledcSetup(PWM_FAN_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+    ledcAttachPin(PWM_FAN, PWM_FAN_CHANNEL);
 
-     pinMode(HEAT_OUT_PIN, OUTPUT);
-     pinMode(FAN_OUT_PIN, OUTPUT);
+    ledcSetup(PWM_HEAT_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+    ledcAttachPin(PWM_HEAT, PWM_HEAT_CHANNEL);
 
-    Serial_debug.begin(BAUDRATE,SERIAL_8N1,-1,-1);
+    Serial.begin(BAUDRATE);
 
 #if defined(DEBUG_MODE)
-    Serial_debug.printf("\nHOT AIR ROASTER STARTING...\n");
+    Serial.printf("\nHOT AIR ROASTER STARTING...\n");
 #endif
 
     // 初始化网络服务
@@ -48,7 +42,7 @@ void setup()
     WiFi.softAP(ap_name, "12345678"); // defualt IP address :192.168.4.1 password min 8 digis
 
 #if defined(DEBUG_MODE)
-    Serial_debug.printf("Start Task...\n");
+    Serial.printf("Start Task...\n");
 #endif
 
     /*---------- Task Definition ---------------------*/
@@ -63,7 +57,7 @@ void setup()
         NULL // Running Core decided by FreeRTOS,let core0 run wifi and BT
     );
 #if defined(DEBUG_MODE)
-    Serial_debug.printf("TASK1:Task_Thermo_get_data...\n");
+    Serial.printf("TASK1:Task_Thermo_get_data...\n");
 #endif
 
     xTaskCreate(
@@ -76,44 +70,12 @@ void setup()
         NULL // Running Core decided by FreeRTOS,let core0 run wifi and BT
     );
 #if defined(DEBUG_MODE)
-    Serial_debug.printf("TASK2:Task_modbus_control...\n");
-#endif
-
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(200, "text/plain", "HOT AIR ROASTER Version:1.0.0"); });
-
-    AsyncElegantOTA.begin(&server); // Start AsyncElegantOTA
-    server.begin();
-
-#if defined(DEBUG_MODE)
-    Serial_debug.println("HTTP server started");
-#endif
-
-    // Init pwm fan  output
-    pwm_fan.pause();
-    pwm_fan.write(PWM_FAN, 0, PWM_FREQ, PWM_RESOLUTION);
-    pwm_fan.resume();
-#if defined(DEBUG_MODE)
-    pwm_fan.printDebug();
-
-    Serial_debug.println("PWM FAN started");
-
-#endif
-
-    // Init pwm heat  output
-    pwm_heat.pause();
-    pwm_heat.write(PWM_HEAT, 0, PWM_FREQ, PWM_RESOLUTION);
-    pwm_heat.resume();
-#if defined(DEBUG_MODE)
-    pwm_heat.printDebug();
-
-    Serial_debug.println("PWM FAN started");
-
+    Serial.printf("TASK2:Task_modbus_control...\n");
 #endif
 
 // Init Modbus-TCP
 #if defined(DEBUG_MODE)
-    Serial_debug.printf("Start Modbus-TCP   service...\n");
+    Serial.printf("Start Modbus-TCP   service...\n");
 #endif
     mb.server(502); // Start Modbus IP //default port :502
     mb.addHreg(BT_HREG);

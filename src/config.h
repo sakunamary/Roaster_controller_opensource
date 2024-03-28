@@ -28,8 +28,14 @@
 #define TXD_HMI D6
 #define RXD_HMI D7
 
+
 // pwm setting
-#define PWM_FREQ 10000
+#define PWM_HEAT_CHANNEL    0
+#define PWM_FAN_CHANNEL    1
+#define PWM_FREQ 5000
 #define PWM_RESOLUTION 10 // 0-1024
+
+SemaphoreHandle_t xThermoDataMutex = NULL;
+
 
 #endif

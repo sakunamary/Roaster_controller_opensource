@@ -4,21 +4,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <ModbusIP_ESP8266.h>
-#include <pwmWrite.h>
 
-SemaphoreHandle_t xGetDataMutex = NULL; // Mutex for 读取温度数据
-
-//  ModbusIP object
-ModbusIP mb;
-
-// pwm object
-Pwm pwm_fan = Pwm();
-Pwm pwm_heat = Pwm();
 bool init_status = true;
-
-// PWM Pins
-const int HEAT_OUT_PIN = PWM_HEAT; // GPIO26
-const int FAN_OUT_PIN = PWM_FAN;   // GPIO26
 
 uint16_t last_FAN;
 uint16_t last_PWR;
@@ -30,8 +17,16 @@ const uint16_t FAN_HREG = 3004;
 int heat_level_to_artisan = 0;
 int fan_level_to_artisan = 0;
 
-const uint32_t frequency = PWM_FREQ;
-const byte resolution = PWM_RESOLUTION; // pwm -0-4096
+// Arduino like analogWrite
+// value has to be between 0 and valueMax
+void PWMAnalogWrite(uint8_t channel, uint32_t value, uint32_t valueMax = 255)
+{
+    // calculate duty, 4095 from 2 ^ 12 - 1
+    uint32_t duty = (4095 / valueMax) * min(value, valueMax);
+
+    // write duty to LEDC
+    ledcWrite(channel, duty);
+}
 
 void Task_modbus_control(void *pvParameters)
 { // function
@@ -43,7 +38,7 @@ void Task_modbus_control(void *pvParameters)
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xIntervel);
-        if (xSemaphoreTake(xGetDataMutex, xIntervel) == pdPASS)
+        if (xSemaphoreTake(xThermoDataMutex, xIntervel) == pdPASS)
         {
             if (init_status)
             {
@@ -62,10 +57,10 @@ void Task_modbus_control(void *pvParameters)
                 }
             }
 
-            xSemaphoreGive(xGetDataMutex); // end of lock mutex
+            xSemaphoreGive(xThermoDataMutex); // end of lock mutex
         }
-        pwm_heat.write(HEAT_OUT_PIN, map(heat_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution);  // 自动模式下，将heat数值转换后输出到pwm
-        pwm_fan.write(FAN_OUT_PIN, map(fan_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution); // 自动模式下，将heat数值转换后输出到pwm
+        PWMAnalogWrite(PWM_FAN_CHANNEL, fan_level_to_artisan);   // 自动模式下，将heat数值转换后输出到pwm
+        PWMAnalogWrite(PWM_HEAT_CHANNEL, heat_level_to_artisan); // 自动模式下，将heat数值转换后输出到pwm
     }
 }
 
