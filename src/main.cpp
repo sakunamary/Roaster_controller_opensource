@@ -41,6 +41,12 @@ void setup()
     sprintf(ap_name, "ROASTER_%02X%02X%02X", macAddr[3], macAddr[4], macAddr[5]);
     WiFi.softAP(ap_name, "12345678"); // defualt IP address :192.168.4.1 password min 8 digis
 
+
+#if defined(DEBUG_MODE)
+    Serial.printf("\nAP NAME:%s...\n",ap_name);
+#endif
+
+
 #if defined(DEBUG_MODE)
     Serial.printf("Start Task...\n");
 #endif

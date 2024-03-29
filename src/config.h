@@ -12,21 +12,21 @@
 #define VERSION "1.0.0"
 
 
-#define SPI_SCK D8
-#define SPI_MISO D9
-#define SPI_MOSI D10
+#define SPI_SCK 8
+#define SPI_MISO 9
+#define SPI_MOSI 10
 
-#define SPI_CS_BT D2
-#define SPI_CS_ET D1
+#define SPI_CS_BT 4
+#define SPI_CS_ET 3
 
-#define PWM_FAN D3
-#define PWM_HEAT D2
+#define PWM_FAN 5
+#define PWM_HEAT 2
 
-#define I2C_SCL D5
-#define I2C_SDA D4
+#define I2C_SCL 7
+#define I2C_SDA 6
 
-#define TXD_HMI D6
-#define RXD_HMI D7
+#define TXD_HMI 21
+#define RXD_HMI 20
 
 
 // pwm setting

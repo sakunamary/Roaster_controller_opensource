@@ -9,10 +9,10 @@
 //  ModbusIP object
 ModbusIP mb;
 
-
 double BT_TEMP;
 double ET_TEMP;
 
+// MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 MAX6675 thermo_BT(SPI_SCK, SPI_CS_BT, SPI_MISO); // CH2  thermoEX
 MAX6675 thermo_ET(SPI_SCK, SPI_CS_ET, SPI_MISO); // CH2  thermoEX
 
@@ -37,16 +37,19 @@ void Task_Thermo_get_data(void *pvParameters)
         // Wait for the next cycle (intervel 1500ms).
         vTaskDelayUntil(&xLastWakeTime, xIntervel);
         if (xSemaphoreTake(xThermoDataMutex, xIntervel) == pdPASS) // 给温度数组的最后一个数值写入数据
-        {                                                       // lock the  mutex
+        {                                                          // lock the  mutex
             // 读取max6675数据
-            BT_TEMP = round((thermo_BT.readCelsius() * 10) / 10);
+            BT_TEMP = round((thermo_BT.readCelsius() * 10)) / 10;
             vTaskDelay(20);
-            ET_TEMP = round((thermo_ET.readCelsius() * 10) / 10);
+            ET_TEMP = round((thermo_ET.readCelsius() * 10)) / 10;
             vTaskDelay(20);
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
             // update  Hreg data
             mb.Hreg(BT_HREG, int(round(BT_TEMP * 10))); // 初始化赋值
             mb.Hreg(ET_HREG, int(round(ET_HREG * 10))); // 初始化赋值
+#if defined(DEBUG_MODE)
+            Serial.printf("\nBT:%4.2f", thermo_BT.readCelsius());
+#endif            
         }
     }
 
