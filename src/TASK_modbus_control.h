@@ -49,6 +49,7 @@ void Task_modbus_control(void *pvParameters)
             {
                 last_FAN = mb.Hreg(FAN_HREG);
                 last_PWR = mb.Hreg(HEAT_HREG);
+                init_status = true;
             }
             else
             {
@@ -64,8 +65,8 @@ void Task_modbus_control(void *pvParameters)
 
             xSemaphoreGive(xGetDataMutex); // end of lock mutex
         }
-        pwm_heat.write(HEAT_OUT_PIN, map(heat_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution);  // 自动模式下，将heat数值转换后输出到pwm
-        pwm_fan.write(FAN_OUT_PIN, map(fan_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution); // 自动模式下，将heat数值转换后输出到pwm
+        pwm_heat.write(HEAT_OUT_PIN, map(heat_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution); // 自动模式下，将heat数值转换后输出到pwm
+        pwm_fan.write(FAN_OUT_PIN, map(fan_level_to_artisan, 0, 100, 100, 900), PWM_FREQ, resolution);    // 自动模式下，将heat数值转换后输出到pwm
     }
 }
 
