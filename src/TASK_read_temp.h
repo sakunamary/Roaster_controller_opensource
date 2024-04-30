@@ -12,6 +12,10 @@ ModbusIP mb;
 double BT_TEMP;
 double ET_TEMP;
 
+double bt_temp[5] = {0};
+int i, j;
+double temp_;
+
 // MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 MAX6675 thermo_BT(SPI_SCK, SPI_CS_BT, SPI_MISO); // CH2  thermoEX
 MAX6675 thermo_ET(SPI_SCK, SPI_CS_ET, SPI_MISO); // CH2  thermoEX
@@ -38,18 +42,38 @@ void Task_Thermo_get_data(void *pvParameters)
         vTaskDelayUntil(&xLastWakeTime, xIntervel);
         if (xSemaphoreTake(xThermoDataMutex, xIntervel) == pdPASS) // 给温度数组的最后一个数值写入数据
         {                                                          // lock the  mutex
-            // 读取max6675数据
-            BT_TEMP = round((thermo_BT.readCelsius() * 10)) / 10;
-            vTaskDelay(20);
+                                                                   // 读取max6675数据
+            for (i = 0; i < 5; i++)
+            {
+                if (i == 0)
+                {
+                    bt_temp[5] = {0};
+                }
+                vTaskDelay(50);
+                bt_temp[i] = round((thermo_BT.readCelsius() * 10)) / 10;
+                for (j = i + 1; j < 5; j++)
+                {
+                    if (bt_temp[i] > bt_temp[j])
+                    {
+                        temp_ = bt_temp[i];
+                        bt_temp[i] = bt_temp[j];
+                        bt_temp[j] = temp_;
+                    }
+                }
+            }
+
+            BT_TEMP = bt_temp[2];
+
             ET_TEMP = round((thermo_ET.readCelsius() * 10)) / 10;
             vTaskDelay(20);
+
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
             // update  Hreg data
             mb.Hreg(BT_HREG, int(round(BT_TEMP * 10))); // 初始化赋值
             mb.Hreg(ET_HREG, int(round(ET_HREG * 10))); // 初始化赋值
 #if defined(DEBUG_MODE)
-            Serial.printf("\nBT:%4.2f", thermo_BT.readCelsius());
-#endif            
+            Serial.printf("\nBT RAW :%4.2f BT out: %4.2f", thermo_BT.readCelsius(), BT_TEMP);
+#endif
         }
     }
 

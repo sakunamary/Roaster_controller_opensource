@@ -7,9 +7,9 @@
 #define uS_TO_S_FACTOR 1000000 /* Conversion factor for micro seconds to seconds */
 #define BAUDRATE 115200        // serial port baudrate
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
-#define VERSION "1.0.0"
+#define VERSION "1.0.1"
 
 
 #define SPI_SCK 8
