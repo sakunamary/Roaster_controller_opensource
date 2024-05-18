@@ -16,18 +16,8 @@ void Task_Thermo_get_data(void *pvParameters);
 
 void setup()
 {
-
+    
     xThermoDataMutex = xSemaphoreCreateMutex();
-
-    pinMode(PWM_HEAT, OUTPUT);
-    pinMode(PWM_FAN, OUTPUT);
-    // PWM Pins
-    ledcSetup(PWM_FAN_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-    ledcAttachPin(PWM_FAN, PWM_FAN_CHANNEL);
-
-    ledcSetup(PWM_HEAT_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-    ledcAttachPin(PWM_HEAT, PWM_HEAT_CHANNEL);
-
     Serial.begin(BAUDRATE);
 
 #if defined(DEBUG_MODE)

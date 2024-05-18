@@ -7,9 +7,9 @@
 #define uS_TO_S_FACTOR 1000000 /* Conversion factor for micro seconds to seconds */
 #define BAUDRATE 115200        // serial port baudrate
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
-#define VERSION "1.0.1"
+#define VERSION "1.0.2"
 
 
 #define SPI_SCK 8
@@ -30,9 +30,7 @@
 
 
 // pwm setting
-#define PWM_HEAT_CHANNEL    0
-#define PWM_FAN_CHANNEL    1
-#define PWM_FREQ 5000
+#define PWM_FREQ 8000
 #define PWM_RESOLUTION 10 // 0-1024
 
 SemaphoreHandle_t xThermoDataMutex = NULL;

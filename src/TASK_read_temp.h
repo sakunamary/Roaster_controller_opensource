@@ -2,6 +2,7 @@
 #define __TASK_READ_TEMP_H__
 
 #include <Arduino.h>
+#include <config.h>
 #include <Wire.h>
 #include "max6675.h"
 #include <ModbusIP_ESP8266.h>
@@ -70,7 +71,7 @@ void Task_Thermo_get_data(void *pvParameters)
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
             // update  Hreg data
             mb.Hreg(BT_HREG, int(round(BT_TEMP * 10))); // 初始化赋值
-            mb.Hreg(ET_HREG, int(round(ET_HREG * 10))); // 初始化赋值
+            mb.Hreg(ET_HREG, int(round(ET_TEMP * 10))); // 初始化赋值
 #if defined(DEBUG_MODE)
             //Serial.printf("\nBT RAW :%4.2f BT out: %4.2f", thermo_BT.readCelsius(), BT_TEMP);
 #endif
