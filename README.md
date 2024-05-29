@@ -1,4 +1,3 @@
-
 全热风咖啡烘豆机主控板，适合自己diy用。
 2路温度采集：bt和inlet
 温度采集使用max6675 k型热电偶
@@ -9,8 +8,6 @@
 目前开源板程序功能如下：
 1为无线接artisan记录温度数据
 2手动控制风力 火力。
-
-
 
 硬件开源地址：https://oshwhub.com/sakunamary/re-feng-ji-kong-zhi-ban-kai-yuan
 固件开源地址：
