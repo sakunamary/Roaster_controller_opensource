@@ -30,7 +30,7 @@
 
 
 // pwm setting
-#define PWM_FREQ 1000
+#define PWM_FREQ 50
 #define PWM_RESOLUTION 10 // 0-1024
 
 SemaphoreHandle_t xThermoDataMutex = NULL;
