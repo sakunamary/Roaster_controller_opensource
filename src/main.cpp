@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <config.h>
 #include <WiFi.h>
-//#include <HardwareSerial.h>
 #include <TASK_read_temp.h>
 #include <TASK_modbus_control.h>
 
@@ -10,14 +9,14 @@ String local_IP;
 char ap_name[30];
 uint8_t macAddr[6];
 
-//HardwareSerial Serial(0);
+// HardwareSerial Serial(0);
 
 void Task_modbus_control(void *pvParameters);
 void Task_Thermo_get_data(void *pvParameters);
 
 void setup()
 {
-    
+
     xThermoDataMutex = xSemaphoreCreateMutex();
 
     Serial.begin(BAUDRATE);
@@ -26,28 +25,15 @@ void setup()
     Serial.printf("\nHOT AIR ROASTER STARTING...\n");
 #endif
 
-
-   // // setup PWM Pins
-    // pinMode(PWM_HEAT, OUTPUT);
-    // pinMode(PWM_FAN, OUTPUT);
-
-    // ledcSetup(PWM_FAN_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-    // ledcAttachPin(PWM_FAN, PWM_FAN_CHANNEL);
-
-    // ledcSetup(PWM_HEAT_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-    // ledcAttachPin(PWM_HEAT, PWM_HEAT_CHANNEL);
-
-
     pwm.pause();
-    pwm.write(pwm_fan_out, 500, frequency, resolution);
+    pwm.write(pwm_fan_out, 0, frequency, resolution);
     pwm.write(pwm_heat_out, 0, frequency, resolution);
     pwm.resume();
-    pwm.printDebug();
+
+    // pwm.printDebug();
 #if defined(DEBUG_MODE)
     Serial.printf("\nStart PWM...\n");
 #endif
-
-
 
     // 初始化网络服务
 
@@ -56,12 +42,9 @@ void setup()
     sprintf(ap_name, "ROASTER_%02X%02X%02X", macAddr[3], macAddr[4], macAddr[5]);
     WiFi.softAP(ap_name, "12345678"); // defualt IP address :192.168.4.1 password min 8 digis
 
-
 #if defined(DEBUG_MODE)
-    Serial.printf("\nAP NAME:%s...\n",ap_name);
+    Serial.printf("\nAP NAME:%s...\n", ap_name);
 #endif
-
-
 
 #if defined(DEBUG_MODE)
     Serial.printf("Start Task...\n");
@@ -108,7 +91,7 @@ void setup()
     mb.Hreg(BT_HREG, 0);   // 初始化赋值
     mb.Hreg(ET_HREG, 0);   // 初始化赋值
     mb.Hreg(HEAT_HREG, 0); // 初始化赋值
-    mb.Hreg(FAN_HREG, 30);  // 初始化赋值
+    mb.Hreg(FAN_HREG, 0);  // 初始化赋值
 }
 
 void loop()

@@ -13,11 +13,13 @@ uint16_t last_FAN;
 uint16_t last_PWR;
 
 const uint32_t frequency = PWM_FREQ;
+
 const byte resolution = PWM_RESOLUTION;
 const byte pwm_fan_out = PWM_FAN;
 const byte pwm_heat_out = PWM_HEAT;
 
 Pwm pwm = Pwm();
+
 // Modbus Registers Offsets
 const uint16_t HEAT_HREG = 3003;
 const uint16_t FAN_HREG = 3004;
@@ -60,10 +62,10 @@ void Task_modbus_control(void *pvParameters)
 
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
         }
-        // 自动模式下，将heat数值转换后输出到pwm
+        // 数值转换后输出到pwm
 
         pwm.write(pwm_heat_out, map(heat_level_to_artisan, 0, 100, 230, 950), frequency, resolution); // 输出新火力pwr到SSRÍ
-        pwm.write(pwm_fan_out, map(fan_level_to_artisan, 10, 100, 250, 950), frequency, resolution);
+        pwm.write(pwm_fan_out, map(fan_level_to_artisan, 0, 100, 285, 350), frequency, resolution);
     }
 }
 
