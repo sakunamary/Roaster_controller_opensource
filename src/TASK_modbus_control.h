@@ -31,7 +31,7 @@ void Task_modbus_control(void *pvParameters)
 { // function
     (void)pvParameters;
     TickType_t xLastWakeTime;
-    const TickType_t xIntervel = 1000 / portTICK_PERIOD_MS;
+    const TickType_t xIntervel = 200 / portTICK_PERIOD_MS;
     xLastWakeTime = xTaskGetTickCount();
 
     for (;;)
@@ -63,8 +63,7 @@ void Task_modbus_control(void *pvParameters)
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
         }
         // 数值转换后输出到pwm
-
-        pwm.write(pwm_heat_out, map(heat_level_to_artisan, 0, 100, 230, 950), frequency, resolution); // 输出新火力pwr到SSRÍ
+        pwm.write(pwm_heat_out, map(heat_level_to_artisan, 0, 100, 230, 950), frequency, resolution); 
         pwm.write(pwm_fan_out, map(fan_level_to_artisan, 0, 100, 285, 350), frequency, resolution);
     }
 }

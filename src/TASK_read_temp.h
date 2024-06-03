@@ -18,12 +18,12 @@ int i, j;
 double temp_;
 
 // MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
-MAX6675 thermo_BT(SPI_SCK, SPI_CS_BT, SPI_MISO); // CH2  thermoEX
-MAX6675 thermo_ET(SPI_SCK, SPI_CS_ET, SPI_MISO); // CH2  thermoEX
+MAX6675 thermo_BT(SPI_SCK, SPI_CS_BT, SPI_MISO); // CH1  豆温
+MAX6675 thermo_ET(SPI_SCK, SPI_CS_ET, SPI_MISO); // CH2  风温
 
 // Modbus Registers Offsets
-const uint16_t BT_HREG = 3001;
-const uint16_t ET_HREG = 3002;
+const uint16_t BT_HREG = 3001; // 对应的 modbus 寄存器偏移量
+const uint16_t ET_HREG = 3002; // 对应的 modbus 寄存器偏移量
 
 void Task_Thermo_get_data(void *pvParameters)
 { // function
@@ -32,18 +32,15 @@ void Task_Thermo_get_data(void *pvParameters)
     (void)pvParameters;
     TickType_t xLastWakeTime;
 
-    const TickType_t xIntervel = 1500 / portTICK_PERIOD_MS;
-    /* Task Setup and Initialize */
-    // Initial the xLastWakeTime variable with the current time.
+    const TickType_t xIntervel = 1500 / portTICK_PERIOD_MS; // 1.5s完成一次数据采集
+
     xLastWakeTime = xTaskGetTickCount();
 
-    for (;;) // A Task shall never return or exit.
-    {        // for loop
-        // Wait for the next cycle (intervel 1500ms).
+    for (;;)
+    {
         vTaskDelayUntil(&xLastWakeTime, xIntervel);
-        if (xSemaphoreTake(xThermoDataMutex, xIntervel) == pdPASS) // 给温度数组的最后一个数值写入数据
-        {                                                          // lock the  mutex
-                                                                   // 读取max6675数据
+        if (xSemaphoreTake(xThermoDataMutex, xIntervel) == pdPASS)
+        {
             for (i = 0; i < 5; i++)
             {
                 if (i == 0)
@@ -51,7 +48,7 @@ void Task_Thermo_get_data(void *pvParameters)
                     bt_temp[5] = {0};
                 }
                 vTaskDelay(50);
-                bt_temp[i] = round((thermo_BT.readCelsius() * 10)) / 10;
+                bt_temp[i] = round((thermo_BT.readCelsius() * 10)) / 10; // 只取到小数点后1位
                 for (j = i + 1; j < 5; j++)
                 {
                     if (bt_temp[i] > bt_temp[j])
@@ -63,17 +60,17 @@ void Task_Thermo_get_data(void *pvParameters)
                 }
             }
 
-            BT_TEMP = bt_temp[2];
+            BT_TEMP = bt_temp[2]; // 取5次采集数据的中间值作为输出
 
-            ET_TEMP = round((thermo_ET.readCelsius() * 10)) / 10;
+            ET_TEMP = round((thermo_ET.readCelsius() * 10)) / 10; // 只取到小数点后1位
             vTaskDelay(20);
 
             xSemaphoreGive(xThermoDataMutex); // end of lock mutex
             // update  Hreg data
-            mb.Hreg(BT_HREG, int(round(BT_TEMP * 10))); // 初始化赋值
-            mb.Hreg(ET_HREG, int(round(ET_TEMP * 10))); // 初始化赋值
+            mb.Hreg(BT_HREG, int(round(BT_TEMP * 10))); // 更新modbus寄存器数据
+            mb.Hreg(ET_HREG, int(round(ET_TEMP * 10))); // 更新modbus寄存器数据
 #if defined(DEBUG_MODE)
-            //Serial.printf("\nBT RAW :%4.2f BT out: %4.2f", thermo_BT.readCelsius(), BT_TEMP);
+            Serial.printf("\nBT RAW :%4.2f BT out: %4.2f", thermo_BT.readCelsius(), BT_TEMP); //用作debug监控数据采集情况
 #endif
         }
     }

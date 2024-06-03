@@ -22,7 +22,7 @@ void setup()
     Serial.begin(BAUDRATE);
 
 #if defined(DEBUG_MODE)
-    Serial.printf("\nHOT AIR ROASTER STARTING...\n");
+    Serial.printf("\nHOT AIR ROASTER STARTING...\n"); // 启动setup
 #endif
 
     pwm.pause();
@@ -30,13 +30,12 @@ void setup()
     pwm.write(pwm_heat_out, 0, frequency, resolution);
     pwm.resume();
 
-    // pwm.printDebug();
 #if defined(DEBUG_MODE)
-    Serial.printf("\nStart PWM...\n");
+    Serial.printf("\nStart PWM...\n"); // 初始化 pwm
+    pwm.printDebug();
 #endif
 
     // 初始化网络服务
-
     WiFi.macAddress(macAddr);
     WiFi.mode(WIFI_AP);
     sprintf(ap_name, "ROASTER_%02X%02X%02X", macAddr[3], macAddr[4], macAddr[5]);
@@ -53,7 +52,7 @@ void setup()
     /*---------- Task Definition ---------------------*/
     // Setup tasks to run independently.
     xTaskCreate(
-        Task_Thermo_get_data, "Thermo_get_data" // 获取HB数据
+        Task_Thermo_get_data, "Thermo_get_data" // 获取温度数据的任务
         ,
         1024 * 6 // This stack size can be checked & adjusted by reading the Stack Highwater
         ,
@@ -66,7 +65,7 @@ void setup()
 #endif
 
     xTaskCreate(
-        Task_modbus_control, "modbus_control" // 获取HB数据
+        Task_modbus_control, "modbus_control" // 获取监控artisan操控的任务
         ,
         1024 * 10 // This stack size can be checked & adjusted by reading the Stack Highwater
         ,
@@ -78,9 +77,9 @@ void setup()
     Serial.printf("TASK2:Task_modbus_control...\n");
 #endif
 
-// Init Modbus-TCP
 #if defined(DEBUG_MODE)
-    Serial.printf("Start Modbus-TCP   service...\n");
+    Serial.printf("Start Modbus-TCP   service...\n");// 初始化Modbus-TCP服务
+
 #endif
     mb.server(502); // Start Modbus IP //default port :502
     mb.addHreg(BT_HREG);
